@@ -1,0 +1,29 @@
+services:
+  pgdatabase:
+    image: postgres:18
+    environment:
+      POSTGRES_USER: "root"
+      POSTGRES_PASSWORD: "***REMOVED***"
+      POSTGRES_DB: "global-semiconductor-industry-2010-2026"
+    volumes:
+      - global-semiconductor-industry-2010-2026:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "***REMOVED***"
+      PGADMIN_DEFAULT_PASSWORD: "***REMOVED***"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    ports:
+      - "8085:80"
+    depends_on:
+      - pgdatabase
+
+
+
+volumes:
+  global-semiconductor-industry-2010-2026:
+  pgadmin_data:
