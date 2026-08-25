@@ -7,7 +7,6 @@ ENV PATH="/code/.venv/bin:$PATH"
 COPY pyproject.toml uv.lock ./
 RUN uv sync --locked
 
-COPY main.py ./
 COPY src/ ./src/
 
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["prefect", "worker", "start", "--pool", "semiconductor-pool", "--type", "process"]
