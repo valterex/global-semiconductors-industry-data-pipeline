@@ -11,3 +11,18 @@ dependencies = [
     "sqlalchemy>=2.0.52",
     "tqdm>=4.70.0",
 ]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.5",
+]
