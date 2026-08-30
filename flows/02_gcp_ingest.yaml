@@ -1,0 +1,132 @@
+id: 02_gcp_ingest
+namespace: semiconductor
+description: |
+  ELT pipeline for the Kaggle semiconductor dataset:
+    1. Extract the 5 CSV files via kagglehub (Python).
+    2. Load them into Google Cloud Storage (data lake).
+    3. Load them into BigQuery (data warehouse).
+
+  Requires the KV store values from 01_gcp_kv. GCP authentication uses
+  Application Default Credentials (GOOGLE_APPLICATION_CREDENTIALS).
+
+tasks:
+  - id: extract
+    type: io.kestra.plugin.scripts.python.Script
+    taskRunner:
+      type: io.kestra.plugin.scripts.runner.docker.Docker
+      pullPolicy: IF_NOT_PRESENT
+    containerImage: kestra-semiconductor:latest
+    outputFiles:
+      - "*.csv"
+    script: |
+      import os
+      import shutil
+      import kagglehub
+
+      FILES = [
+          "ai_chip_market.csv",
+          "chip_prices.csv",
+          "export_controls.csv",
+          "fab_capacity.csv",
+          "chip_companies_financials.csv",
+      ]
+
+      path = kagglehub.dataset_download("sergionefedov/global-semiconductor-industry-2010-2026")
+      
+      for file_name in FILES:
+          shutil.copy(os.path.join(path, file_name), file_name)
+
+  - id: upload_ai_chip_market
+    type: io.kestra.plugin.gcp.gcs.Upload
+    from: "{{ outputs.extract.outputFiles['ai_chip_market.csv'] }}"
+    to: "gs://{{ kv('GCP_BUCKET_NAME') }}/ai_chip_market.csv"
+
+  - id: upload_chip_prices
+    type: io.kestra.plugin.gcp.gcs.Upload
+    from: "{{ outputs.extract.outputFiles['chip_prices.csv'] }}"
+    to: "gs://{{ kv('GCP_BUCKET_NAME') }}/chip_prices.csv"
+
+  - id: upload_export_controls
+    type: io.kestra.plugin.gcp.gcs.Upload
+    from: "{{ outputs.extract.outputFiles['export_controls.csv'] }}"
+    to: "gs://{{ kv('GCP_BUCKET_NAME') }}/export_controls.csv"
+
+  - id: upload_fab_capacity
+    type: io.kestra.plugin.gcp.gcs.Upload
+    from: "{{ outputs.extract.outputFiles['fab_capacity.csv'] }}"
+    to: "gs://{{ kv('GCP_BUCKET_NAME') }}/fab_capacity.csv"
+
+  - id: upload_chip_companies_financials
+    type: io.kestra.plugin.gcp.gcs.Upload
+    from: "{{ outputs.extract.outputFiles['chip_companies_financials.csv'] }}"
+    to: "gs://{{ kv('GCP_BUCKET_NAME') }}/chip_companies_financials.csv"
+
+  - id: load_ai_chip_market
+    type: io.kestra.plugin.gcp.bigquery.Query
+    sql: |
+      LOAD DATA OVERWRITE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.ai_chip_market`
+      (year INT64, chip_name STRING, vendor STRING, launch_date DATE, memory_gb INT64, fp16_tflops INT64, tdp_watts INT64, estimated_shipments_units INT64, estimated_asp_usd INT64, estimated_revenue_usd_m FLOAT64, description STRING)
+      FROM FILES (
+        format = 'CSV',
+        uris = ['gs://{{ kv('GCP_BUCKET_NAME') }}/ai_chip_market.csv'],
+        skip_leading_rows = 1,
+        ignore_unknown_values = TRUE
+      );
+
+  - id: load_chip_prices
+    type: io.kestra.plugin.gcp.bigquery.Query
+    sql: |
+      LOAD DATA OVERWRITE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_prices`
+      (year_month STRING, year INT64, product STRING, currency STRING, unit STRING, price FLOAT64)
+      FROM FILES (
+        format = 'CSV',
+        uris = ['gs://{{ kv('GCP_BUCKET_NAME') }}/chip_prices.csv'],
+        skip_leading_rows = 1,
+        ignore_unknown_values = TRUE
+      );
+
+  - id: load_export_controls
+    type: io.kestra.plugin.gcp.bigquery.Query
+    sql: |
+      LOAD DATA OVERWRITE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.export_controls`
+      (control_id STRING, date DATE, year INT64, month INT64, imposing_country STRING, target STRING, policy_name STRING, severity_score INT64, description STRING, is_us_action INT64, is_china_action INT64, is_netherlands_action INT64, is_trump_1_0 INT64, is_biden INT64, is_trump_2_0 INT64)
+      FROM FILES (
+        format = 'CSV',
+        uris = ['gs://{{ kv('GCP_BUCKET_NAME') }}/export_controls.csv'],
+        skip_leading_rows = 1,
+        ignore_unknown_values = TRUE
+      );
+
+  - id: load_fab_capacity
+    type: io.kestra.plugin.gcp.bigquery.Query
+    sql: |
+      LOAD DATA OVERWRITE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.fab_capacity`
+      (year INT64, company STRING, country_iso3 STRING, process_node_nm INT64, fab_type STRING, monthly_wafer_capacity INT64, fab_started_year INT64)
+      FROM FILES (
+        format = 'CSV',
+        uris = ['gs://{{ kv('GCP_BUCKET_NAME') }}/fab_capacity.csv'],
+        skip_leading_rows = 1,
+        ignore_unknown_values = TRUE
+      );
+
+  - id: load_chip_companies_financials
+    type: io.kestra.plugin.gcp.bigquery.Query
+    sql: |
+      LOAD DATA OVERWRITE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_companies_financials`
+      (year INT64, company_name STRING, ticker STRING, country_iso3 STRING, segment STRING, revenue_usd_bn FLOAT64, operating_margin_pct FLOAT64, operating_income_usd_bn FLOAT64, rd_spend_usd_bn FLOAT64, capex_usd_bn FLOAT64)
+      FROM FILES (
+        format = 'CSV',
+        uris = ['gs://{{ kv('GCP_BUCKET_NAME') }}/chip_companies_financials.csv'],
+        skip_leading_rows = 1,
+        ignore_unknown_values = TRUE
+      );
+
+  - id: purge_files
+    type: io.kestra.plugin.core.storage.PurgeCurrentExecutionFiles
+    description: Remove the downloaded CSV files from Kestra storage.
+
+pluginDefaults:
+  - type: io.kestra.plugin.gcp
+    values:
+      projectId: "{{ kv('GCP_PROJECT_ID') }}"
+      location: "{{ kv('GCP_LOCATION') }}"

@@ -14,10 +14,10 @@ provider "google" {
 }
 
 resource "google_storage_bucket" "semiconductor_data_lake" {
-  name          = var.gcs_bucket_name
-  location      = var.location
-  storage_class             = var.gcs_storage_class
-  force_destroy             = true
+  name                        = var.gcs_bucket_name
+  location                    = var.location
+  storage_class               = var.gcs_storage_class
+  force_destroy               = true
   uniform_bucket_level_access = true
 
   lifecycle_rule {
