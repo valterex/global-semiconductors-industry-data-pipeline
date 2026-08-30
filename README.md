@@ -35,8 +35,19 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
 
 3. Configure and start Kestra:
 
+   Create a `.env` file at the repo root with the following variables set:
+
    ```sh
-   cp .env.example .env
+   POSTGRES_DB
+   POSTGRES_USER
+   POSTGRES_PASSWORD
+   KESTRA_BASIC_AUTH_USERNAME
+   KESTRA_BASIC_AUTH_PASSWORD
+   ```
+
+   Then:
+
+   ```sh
    docker compose up -d
    docker build -t kestra-semiconductor:latest .
    ```
@@ -67,8 +78,8 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
 
 ## Configuration
 
-- `terraform/terraform.tfvars` — GCP project ID and bucket name (gitignored).
-- `.env` — Postgres and web UI credentials
+- `terraform/terraform.tfvars` — GCP project ID and bucket name.
+- `.env` — Postgres and web UI credentials: `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `KESTRA_BASIC_AUTH_USERNAME`, `KESTRA_BASIC_AUTH_PASSWORD`.
 - `flows/01_gcp_kv.yaml` — KV values; project ID and bucket name are supplied as flow inputs.
 
 ## Cleanup
