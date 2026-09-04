@@ -1,17 +1,39 @@
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*~
+
 # Python-generated files
 __pycache__/
-*.py[oc]
+*.py[cod]
+*$py.class
 build/
 dist/
 wheels/
-*.egg-info
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
 
 # Virtual environments
-.venv
+.venv/
+venv/
+env/
 
 # Environment
 .env
 .env.*
+
+# uv
+# uv.lock is committed and must not be ignored
 
 # Terraform
 *.tfstate
@@ -20,12 +42,15 @@ terraform.tfvars
 *.auto.tfvars
 .terraform/
 crash.log
+crash.*.log
 override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
 *.tfplan
 *.tfplan.json
+.terraformrc
+terraform.rc
 
 # GCP service account keys
 *credentials*.json
