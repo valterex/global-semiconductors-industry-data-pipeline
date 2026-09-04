@@ -1,14 +1,6 @@
 # Data Pipeline — Semiconductor Industry
 
-An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](https://www.kaggle.com/datasets/sergionefedov/global-semiconductor-industry-2010-2026) dataset from Kaggle into a Google Cloud Storage data lake and BigQuery.
-
-## Architecture
-
-| Component | Role |
-|---|---|
-| Terraform | Provisions the GCS bucket and BigQuery dataset |
-| Kestra | Orchestrates extract (`kagglehub`) → upload to GCS → load into BigQuery |
-| Docker Compose | Runs Kestra and its Postgres backend locally |
+An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](https://www.kaggle.com/datasets/sergionefedov/global-semiconductor-industry-2010-2026) dataset from Kaggle into a Google Cloud Storage data lake and BigQuery data warehouse.
 
 ## Prerequisites
 
@@ -23,11 +15,18 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
    ```sh
    cd terraform
    cp terraform.tfvars.example terraform.tfvars
-   terraform init
+
+   # Create the bucket that stores remote Terraform state,
+   # then set that name as the `bucket` value in the `backend "gcs"` block
+   # at the top of main.tf.
+   gcloud storage buckets create gs://<your-state-bucket> --location=EU
+
+   # -migrate-state moves any existing local terraform.tfstate into GCS.
+   terraform init -migrate-state
    terraform apply
    ```
 
-2. Authenticate with Application Default Credentials (no service account key):
+2. Authenticate with Application Default Credentials:
 
    ```sh
    gcloud auth application-default login
@@ -45,7 +44,7 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
    KESTRA_BASIC_AUTH_PASSWORD
    ```
 
-   Then:
+   Docker:
 
    ```sh
    docker compose up -d
@@ -76,13 +75,13 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
 
    Kestra UI: http://localhost:8080
 
-## Configuration
-
-- `terraform/terraform.tfvars` — GCP project ID and bucket name.
-- `.env` — Postgres and web UI credentials: `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `KESTRA_BASIC_AUTH_USERNAME`, `KESTRA_BASIC_AUTH_PASSWORD`.
-- `flows/01_gcp_kv.yaml` — KV values; project ID and bucket name are supplied as flow inputs.
-
 ## Cleanup
+
+Deletion is intentionally protected: `terraform destroy` will fail if the GCS
+bucket still holds data (`force_destroy = false`) or while the BigQuery dataset
+still has tables (`delete_contents_on_destroy = false`). To tear everything
+down, empty the bucket and set `delete_contents_on_destroy = true` in `main.tf`,
+then run:
 
 ```sh
 cd terraform && terraform destroy

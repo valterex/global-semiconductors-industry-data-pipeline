@@ -3,8 +3,8 @@ namespace: semiconductor
 description: |
   ELT pipeline for the Kaggle semiconductor dataset:
     1. Extract the 5 CSV files via kagglehub (Python).
-    2. Load them into Google Cloud Storage (data lake).
-    3. Load them into BigQuery (data warehouse).
+    2. Stage data Google Cloud Storage.
+    3. Load data with BigQuery.
 
   Requires the KV store values from 01_gcp_kv. GCP authentication uses
   Application Default Credentials (GOOGLE_APPLICATION_CREDENTIALS).
@@ -36,27 +36,27 @@ tasks:
       for file_name in FILES:
           shutil.copy(os.path.join(path, file_name), file_name)
 
-  - id: upload_ai_chip_market
+  - id: stage_ai_chip_market
     type: io.kestra.plugin.gcp.gcs.Upload
     from: "{{ outputs.extract.outputFiles['ai_chip_market.csv'] }}"
     to: "gs://{{ kv('GCP_BUCKET_NAME') }}/ai_chip_market.csv"
 
-  - id: upload_chip_prices
+  - id: stage_chip_prices
     type: io.kestra.plugin.gcp.gcs.Upload
     from: "{{ outputs.extract.outputFiles['chip_prices.csv'] }}"
     to: "gs://{{ kv('GCP_BUCKET_NAME') }}/chip_prices.csv"
 
-  - id: upload_export_controls
+  - id: stage_export_controls
     type: io.kestra.plugin.gcp.gcs.Upload
     from: "{{ outputs.extract.outputFiles['export_controls.csv'] }}"
     to: "gs://{{ kv('GCP_BUCKET_NAME') }}/export_controls.csv"
 
-  - id: upload_fab_capacity
+  - id: stage_fab_capacity
     type: io.kestra.plugin.gcp.gcs.Upload
     from: "{{ outputs.extract.outputFiles['fab_capacity.csv'] }}"
     to: "gs://{{ kv('GCP_BUCKET_NAME') }}/fab_capacity.csv"
 
-  - id: upload_chip_companies_financials
+  - id: stage_chip_companies_financials
     type: io.kestra.plugin.gcp.gcs.Upload
     from: "{{ outputs.extract.outputFiles['chip_companies_financials.csv'] }}"
     to: "gs://{{ kv('GCP_BUCKET_NAME') }}/chip_companies_financials.csv"

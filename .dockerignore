@@ -1,4 +1,28 @@
 .git
+.gitignore
 .venv
+venv
 __pycache__
-*.py[oc]
+*.py[cod]
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.coverage
+htmlcov
+
+# Environment
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+.vscode
+.idea
+
+# Terraform
+.terraform
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+*.auto.tfvars
+*.tfplan
