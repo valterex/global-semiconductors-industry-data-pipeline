@@ -9,6 +9,9 @@ description: |
   Requires the KV store values from 01_gcp_kv. GCP authentication uses
   Application Default Credentials (GOOGLE_APPLICATION_CREDENTIALS).
 
+variables:
+  gcs_bucket: "gs://{{ kv('GCP_BUCKET_NAME') }}"
+
 tasks:
   - id: extract
     type: io.kestra.plugin.scripts.python.Script
@@ -39,27 +42,27 @@ tasks:
   - id: stage_ai_chip_market
     type: io.kestra.plugin.gcp.gcs.Upload
     from: "{{ outputs.extract.outputFiles['ai_chip_market.csv'] }}"
-    to: "gs://{{ kv('GCP_BUCKET_NAME') }}/ai_chip_market.csv"
+    to: "{{ render(vars.gcs_bucket) }}/ai_chip_market.csv"
 
   - id: stage_chip_prices
     type: io.kestra.plugin.gcp.gcs.Upload
     from: "{{ outputs.extract.outputFiles['chip_prices.csv'] }}"
-    to: "gs://{{ kv('GCP_BUCKET_NAME') }}/chip_prices.csv"
+    to: "{{ render(vars.gcs_bucket) }}/chip_prices.csv"
 
   - id: stage_export_controls
     type: io.kestra.plugin.gcp.gcs.Upload
     from: "{{ outputs.extract.outputFiles['export_controls.csv'] }}"
-    to: "gs://{{ kv('GCP_BUCKET_NAME') }}/export_controls.csv"
+    to: "{{ render(vars.gcs_bucket) }}/export_controls.csv"
 
   - id: stage_fab_capacity
     type: io.kestra.plugin.gcp.gcs.Upload
     from: "{{ outputs.extract.outputFiles['fab_capacity.csv'] }}"
-    to: "gs://{{ kv('GCP_BUCKET_NAME') }}/fab_capacity.csv"
+    to: "{{ render(vars.gcs_bucket) }}/fab_capacity.csv"
 
   - id: stage_chip_companies_financials
     type: io.kestra.plugin.gcp.gcs.Upload
     from: "{{ outputs.extract.outputFiles['chip_companies_financials.csv'] }}"
-    to: "gs://{{ kv('GCP_BUCKET_NAME') }}/chip_companies_financials.csv"
+    to: "{{ render(vars.gcs_bucket) }}/chip_companies_financials.csv"
 
   - id: load_ai_chip_market
     type: io.kestra.plugin.gcp.bigquery.Query
@@ -68,7 +71,7 @@ tasks:
       (year INT64, chip_name STRING, vendor STRING, launch_date DATE, memory_gb INT64, fp16_tflops INT64, tdp_watts INT64, estimated_shipments_units INT64, estimated_asp_usd INT64, estimated_revenue_usd_m FLOAT64, description STRING)
       FROM FILES (
         format = 'CSV',
-        uris = ['gs://{{ kv('GCP_BUCKET_NAME') }}/ai_chip_market.csv'],
+        uris = ['{{ render(vars.gcs_bucket) }}/ai_chip_market.csv'],
         skip_leading_rows = 1,
         ignore_unknown_values = TRUE
       );
@@ -80,7 +83,7 @@ tasks:
       (year_month STRING, year INT64, product STRING, currency STRING, unit STRING, price FLOAT64)
       FROM FILES (
         format = 'CSV',
-        uris = ['gs://{{ kv('GCP_BUCKET_NAME') }}/chip_prices.csv'],
+        uris = ['{{ render(vars.gcs_bucket) }}/chip_prices.csv'],
         skip_leading_rows = 1,
         ignore_unknown_values = TRUE
       );
@@ -92,7 +95,7 @@ tasks:
       (control_id STRING, date DATE, year INT64, month INT64, imposing_country STRING, target STRING, policy_name STRING, severity_score INT64, description STRING, is_us_action INT64, is_china_action INT64, is_netherlands_action INT64, is_trump_1_0 INT64, is_biden INT64, is_trump_2_0 INT64)
       FROM FILES (
         format = 'CSV',
-        uris = ['gs://{{ kv('GCP_BUCKET_NAME') }}/export_controls.csv'],
+        uris = ['{{ render(vars.gcs_bucket) }}/export_controls.csv'],
         skip_leading_rows = 1,
         ignore_unknown_values = TRUE
       );
@@ -104,7 +107,7 @@ tasks:
       (year INT64, company STRING, country_iso3 STRING, process_node_nm INT64, fab_type STRING, monthly_wafer_capacity INT64, fab_started_year INT64)
       FROM FILES (
         format = 'CSV',
-        uris = ['gs://{{ kv('GCP_BUCKET_NAME') }}/fab_capacity.csv'],
+        uris = ['{{ render(vars.gcs_bucket) }}/fab_capacity.csv'],
         skip_leading_rows = 1,
         ignore_unknown_values = TRUE
       );
@@ -116,7 +119,7 @@ tasks:
       (year INT64, company_name STRING, ticker STRING, country_iso3 STRING, segment STRING, revenue_usd_bn FLOAT64, operating_margin_pct FLOAT64, operating_income_usd_bn FLOAT64, rd_spend_usd_bn FLOAT64, capex_usd_bn FLOAT64)
       FROM FILES (
         format = 'CSV',
-        uris = ['gs://{{ kv('GCP_BUCKET_NAME') }}/chip_companies_financials.csv'],
+        uris = ['{{ render(vars.gcs_bucket) }}/chip_companies_financials.csv'],
         skip_leading_rows = 1,
         ignore_unknown_values = TRUE
       );
