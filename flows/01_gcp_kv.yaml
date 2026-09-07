@@ -14,12 +14,10 @@ inputs:
 
   - id: gcp_location
     type: STRING
-    required: true
     defaults: "EU"
 
   - id: gcp_dataset
     type: STRING
-    required: true
     defaults: "global_semiconductor_industry"
 
 tasks:

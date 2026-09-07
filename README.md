@@ -7,6 +7,8 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
 - Docker
 - Terraform
 - `gcloud` CLI
+- `uv`
+- `pre-commit`
 
 ## Quick start
 
@@ -15,6 +17,7 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
    ```sh
    cd terraform
    cp terraform.tfvars.example terraform.tfvars
+   # Fill in at least `project` and `gcs_bucket_name` in terraform.tfvars.
 
    # Create the bucket that stores remote Terraform state,
    # then set that name as the `bucket` value in the `backend "gcs"` block
@@ -24,6 +27,9 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
    # -migrate-state moves any existing local terraform.tfstate into GCS.
    terraform init -migrate-state
    terraform apply
+
+   # The created bucket and dataset names are exposed as Terraform outputs.
+   terraform output
    ```
 
 2. Authenticate with Application Default Credentials:
@@ -37,11 +43,11 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
    Create a `.env` file at the repo root with the following variables set:
 
    ```sh
-   POSTGRES_DB
-   POSTGRES_USER
-   POSTGRES_PASSWORD
-   KESTRA_BASIC_AUTH_USERNAME
-   KESTRA_BASIC_AUTH_PASSWORD
+   POSTGRES_DB=<database-name>
+   POSTGRES_USER=<postgres-user>
+   POSTGRES_PASSWORD=<postgres-password>
+   KESTRA_BASIC_AUTH_USERNAME=<username>
+   KESTRA_BASIC_AUTH_PASSWORD=<password>
    ```
 
    Docker:
