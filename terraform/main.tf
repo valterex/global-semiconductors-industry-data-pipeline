@@ -1,4 +1,6 @@
 terraform {
+  required_version = ">= 1.14"
+
   backend "gcs" {
     bucket = "REPLACE_WITH_STATE_BUCKET_NAME"
     prefix = "semiconductor/terraform/state"

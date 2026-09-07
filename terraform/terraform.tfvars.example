@@ -1,10 +1,10 @@
 # Copy this file to terraform.tfvars and fill in your values.
 # terraform.tfvars is gitignored and must NOT be committed.
 
-project          = "<your-gcp-project-id>"
-gcs_bucket_name  = "<globally-unique-bucket-name>"
-region           = "europe-west1"
-zone             = "europe-west1-b"
-location         = "EU"
-bq_dataset_name  = "global_semiconductor_industry"
+project           = "<your-gcp-project-id>"
+gcs_bucket_name   = "<globally-unique-bucket-name>"
+region            = "europe-west1"
+zone              = "europe-west1-b"
+location          = "EU"
+bq_dataset_name   = "global_semiconductor_industry"
 gcs_storage_class = "STANDARD"
