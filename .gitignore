@@ -56,3 +56,9 @@ terraform.rc
 *credentials*.json
 *-key.json
 *.key.json
+
+# dbt
+dbt/target/
+dbt/logs/
+dbt/profiles.yml
+dbt/.user.yml

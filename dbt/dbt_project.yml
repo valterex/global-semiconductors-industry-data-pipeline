@@ -1,0 +1,19 @@
+name: 'semiconductor'
+version: '1.0.0'
+
+require-dbt-version: [">=1.8.0", "<2.0.0"]
+
+profile: 'semiconductor'
+
+model-paths: ["models"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  semiconductor:
+    staging:
+      +materialized: view
+    marts:
+      +materialized: table
