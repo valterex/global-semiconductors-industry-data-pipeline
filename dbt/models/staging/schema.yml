@@ -1,0 +1,39 @@
+models:
+  - name: stg_ai_chip_market
+    description: AI chip launches staged from the raw table.
+    columns:
+      - name: launch_date
+        data_tests:
+          - not_null
+
+  - name: stg_chip_prices
+    description: Chip price history staged from the raw table.
+    columns:
+      - name: year
+        data_tests:
+          - not_null
+
+  - name: stg_export_controls
+    description: Export-control policies staged from the raw table.
+    columns:
+      - name: control_id
+        data_tests:
+          - not_null
+          - unique
+      - name: date
+        data_tests:
+          - not_null
+
+  - name: stg_fab_capacity
+    description: Fab capacity staged from the raw table.
+    columns:
+      - name: year
+        data_tests:
+          - not_null
+
+  - name: stg_chip_companies_financials
+    description: Company financials staged from the raw table.
+    columns:
+      - name: year
+        data_tests:
+          - not_null

@@ -1,0 +1,17 @@
+models:
+  - name: fct_export_controls
+    description: >
+      Export-control policies enriched with boolean flags and an
+      administration label derived from the presidency-period flags.
+    columns:
+      - name: control_id
+        data_tests:
+          - not_null
+          - unique
+      - name: date
+        data_tests:
+          - not_null
+      - name: administration
+        data_tests:
+          - accepted_values:
+              values: ['Trump 1.0', 'Biden', 'Trump 2.0', 'Other']

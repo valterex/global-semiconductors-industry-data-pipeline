@@ -1,0 +1,17 @@
+sources:
+  - name: raw
+    description: >
+      Native BigQuery tables materialized by the Kestra ingest pipeline, partitioned + clustered on time.
+    database: "{{ env_var('GCP_PROJECT_ID') }}"
+    schema: global_semiconductor_industry
+    tables:
+      - name: ai_chip_market
+        description: AI chip launches and their specs, shipments, and revenue.
+      - name: chip_prices
+        description: Monthly chip price history by product.
+      - name: export_controls
+        description: Export-control policies and their targets.
+      - name: fab_capacity
+        description: Fab capacity by company, process node, and year.
+      - name: chip_companies_financials
+        description: Annual financials for semiconductor companies.

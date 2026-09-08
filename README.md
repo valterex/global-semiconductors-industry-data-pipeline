@@ -1,6 +1,6 @@
-# Data Pipeline — Semiconductor Industry
+# Global Semiconductor Industry ELT Pipeline
 
-An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](https://www.kaggle.com/datasets/sergionefedov/global-semiconductor-industry-2010-2026) dataset from Kaggle into a Google Cloud Storage data lake and BigQuery data warehouse.
+An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](https://www.kaggle.com/datasets/sergionefedov/global-semiconductor-industry-2010-2026) dataset from Kaggle into a Google Cloud Storage data lake and BigQuery data warehouse, then transforms it into analytics-ready models with dbt.
 
 ## Prerequisites
 
@@ -80,6 +80,30 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
    ```
 
    Kestra UI: http://localhost:8080
+
+5. Install and configure dbt
+
+   ```sh
+   # install dbt (kept out of the Kestra Docker image)
+   uv sync --group dbt
+
+   # create your local profile (uses your existing Application Default Credentials)
+   cd dbt
+   cp profiles.yml.example profiles.yml
+
+   # must match the gcp_project_id set in the Kestra KV store
+   export GCP_PROJECT_ID=<your-project>
+
+   # no `dbt deps` step — the project uses no packages
+   uv run --group dbt dbt build --profiles-dir .
+   uv run --group dbt dbt docs generate --profiles-dir .
+   uv run --group dbt dbt docs serve --profiles-dir .
+   cd ..
+   ```
+
+   The dataset is hardcoded to `global_semiconductor_industry` in
+   `profiles.yml.example` and `models/staging/sources.yml` — keep it aligned with
+   `bq_dataset_name` in `terraform/variables.tf` if you change that default.
 
 ## Cleanup
 
