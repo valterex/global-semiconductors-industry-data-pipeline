@@ -15,9 +15,9 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
 1. Provision the GCP infrastructure:
 
    ```sh
+   # Fill in at least `project` and `gcs_bucket_name` in terraform.tfvars.
    cd terraform
    cp terraform.tfvars.example terraform.tfvars
-   # Fill in at least `project` and `gcs_bucket_name` in terraform.tfvars.
 
    # Create the bucket that stores remote Terraform state,
    # then set that name as the `bucket` value in the `backend "gcs"` block
@@ -46,7 +46,8 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
    POSTGRES_DB=<database-name>
    POSTGRES_USER=<postgres-user>
    POSTGRES_PASSWORD=<postgres-password>
-   KESTRA_BASIC_AUTH_USERNAME=<username>
+
+   KESTRA_BASIC_AUTH_USERNAME=<username> # Must be an email address
    KESTRA_BASIC_AUTH_PASSWORD=<password>
    ```
 
@@ -57,7 +58,7 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
    docker build -t kestra-semiconductor:latest .
    ```
 
-4. Import and run the flows:
+4. Import the flows:
 
    ```sh
    set -a; source .env; set +a
@@ -67,21 +68,19 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
 
    curl -X POST -u "$KESTRA_BASIC_AUTH_USERNAME:$KESTRA_BASIC_AUTH_PASSWORD" \
      http://localhost:8080/api/v1/flows/import -F fileUpload=@flows/02_gcp_ingest.yaml
-
-   # set the KV values
-   curl -X POST -u "$KESTRA_BASIC_AUTH_USERNAME:$KESTRA_BASIC_AUTH_PASSWORD" \
-     'http://localhost:8080/api/v1/executions/semiconductor/01_gcp_kv' \
-     -H 'Content-Type: application/json' \
-     -d '{"inputs":{"gcp_project_id":"<project>","gcp_bucket_name":"<bucket>"}}'
-
-   # run the pipeline
-   curl -X POST -u "$KESTRA_BASIC_AUTH_USERNAME:$KESTRA_BASIC_AUTH_PASSWORD" \
-     'http://localhost:8080/api/v1/executions/semiconductor/02_gcp_ingest'
    ```
 
-   Kestra UI: http://localhost:8080
+5. Set the config and run the pipeline from the Kestra UI (http://localhost:8080):
 
-5. Install and configure dbt
+   1. Set the config: open **Flows → semiconductor → 01_gcp_kv** and click
+      **New execution**. Fill in `gcp_project_id` and `gcp_bucket_name` (leave
+      `gcp_location` and `gcp_dataset` on their defaults unless you changed
+      them), then click **Execute**. This writes the GCP config to the KV store.
+
+   2. Run the pipeline: open **Flows → semiconductor → 02_gcp_ingest** and
+      click **New execution → Execute**.
+
+6. Install and configure dbt
 
    ```sh
    # install dbt (kept out of the Kestra Docker image)

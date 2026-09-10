@@ -4,19 +4,19 @@ variable "project" {
 }
 
 variable "region" {
-  description = "Region"
+  description = "GCP region for compute resources"
   type        = string
   default     = "europe-west1"
 }
 
 variable "zone" {
-  description = "Zone"
+  description = "GCP zone for compute resources"
   type        = string
   default     = "europe-west1-b"
 }
 
 variable "location" {
-  description = "Project Location (for bucket and dataset)"
+  description = "GCP location for the bucket and dataset"
   type        = string
   default     = "EU"
 }
@@ -27,13 +27,13 @@ variable "gcs_bucket_name" {
 }
 
 variable "gcs_storage_class" {
-  description = "Bucket Storage Class"
+  description = "GCS storage class"
   type        = string
   default     = "STANDARD"
 }
 
 variable "bq_dataset_name" {
-  description = "BigQuery Dataset Name"
+  description = "BigQuery dataset name"
   type        = string
   default     = "global_semiconductor_industry"
 }

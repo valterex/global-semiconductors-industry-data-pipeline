@@ -32,9 +32,6 @@ env/
 .env
 .env.*
 
-# uv
-# uv.lock is committed and must not be ignored
-
 # Terraform
 *.tfstate
 *.tfstate.*

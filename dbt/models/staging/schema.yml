@@ -1,39 +1,54 @@
 models:
   - name: stg_ai_chip_market
-    description: AI chip launches staged from the raw table.
+    description: >
+      AI chip launches staged from the raw table. One row per chip per year.
     columns:
       - name: launch_date
+        description: Date the chip was launched.
         data_tests:
           - not_null
 
   - name: stg_chip_prices
-    description: Chip price history staged from the raw table.
+    description: >
+      Chip price history staged from the raw table. One row per product per
+      month.
     columns:
       - name: year
+        description: Year of the price observation.
         data_tests:
           - not_null
 
   - name: stg_export_controls
-    description: Export-control policies staged from the raw table.
+    description: >
+      Export-control policies staged from the raw table. One row per control
+      action.
     columns:
       - name: control_id
+        description: Unique identifier for the control action.
         data_tests:
           - not_null
           - unique
       - name: date
+        description: Date the policy was enacted.
         data_tests:
           - not_null
 
   - name: stg_fab_capacity
-    description: Fab capacity staged from the raw table.
+    description: >
+      Fab capacity staged from the raw table. One row per company, process
+      node, and year.
     columns:
       - name: year
+        description: Year of the capacity figure.
         data_tests:
           - not_null
 
   - name: stg_chip_companies_financials
-    description: Company financials staged from the raw table.
+    description: >
+      Company financials staged from the raw table. One row per company,
+      segment, and year.
     columns:
       - name: year
+        description: Fiscal year.
         data_tests:
           - not_null
