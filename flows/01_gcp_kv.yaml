@@ -1,24 +1,29 @@
 id: 01_gcp_kv
 namespace: semiconductor
 description: |
-  Set the GCP configuration values used by the GCP flows. Run this flow once before running 02_gcp_ingest.
+  Store the GCP configuration in the KV store for the ingest flow.
+  Run once before 02_gcp_ingest.
 
 inputs:
   - id: gcp_project_id
     type: STRING
     required: true
+    description: GCP project ID hosting BigQuery and GCS.
 
   - id: gcp_bucket_name
     type: STRING
     required: true
+    description: GCS bucket name, without the gs:// prefix.
 
   - id: gcp_location
     type: STRING
     defaults: "EU"
+    description: GCP region for BigQuery and GCS.
 
   - id: gcp_dataset
     type: STRING
     defaults: "global_semiconductor_industry"
+    description: BigQuery dataset name.
 
 tasks:
   - id: set_gcp_project_id

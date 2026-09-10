@@ -1,7 +1,7 @@
 [project]
 name = "data-pipeline-semiconductor-industry"
 version = "0.1.0"
-description = "Add your description here"
+description = "Data pipeline for semiconductor industry data processing and analysis."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -23,6 +23,6 @@ dev = [
     "ruff>=0.16.5",
 ]
 dbt = [
-    "dbt-bigquery>=1.9,<1.10",
-    "dbt-core>=1.9,<1.10",
+    "dbt-bigquery>=1.12,<1.13",
+    "dbt-core>=1.12,<1.13",
 ]

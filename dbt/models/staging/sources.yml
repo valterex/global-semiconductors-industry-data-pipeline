@@ -1,17 +1,132 @@
 sources:
   - name: raw
     description: >
-      Native BigQuery tables materialized by the Kestra ingest pipeline, partitioned + clustered on time.
+      Native BigQuery tables materialized by the Kestra ingest pipeline,
+      partitioned and clustered on time.
     database: "{{ env_var('GCP_PROJECT_ID') }}"
     schema: global_semiconductor_industry
     tables:
       - name: ai_chip_market
-        description: AI chip launches and their specs, shipments, and revenue.
+        description: >
+          AI chip launches. One row per chip per year, with specs, shipments,
+          and revenue.
+        columns:
+          - name: year
+            description: Year the chip was on the market.
+          - name: chip_name
+            description: Name of the AI chip.
+          - name: vendor
+            description: Company that designs and sells the chip.
+          - name: launch_date
+            description: Date the chip was launched.
+          - name: memory_gb
+            description: On-chip memory in gigabytes.
+          - name: fp16_tflops
+            description: FP16 compute throughput in teraflops.
+          - name: tdp_watts
+            description: Thermal design power in watts.
+          - name: estimated_shipments_units
+            description: Estimated units shipped that year.
+          - name: estimated_asp_usd
+            description: Estimated average selling price in US dollars.
+          - name: estimated_revenue_usd_m
+            description: Estimated revenue in millions of US dollars.
+          - name: description
+            description: Free-text description of the chip.
+
       - name: chip_prices
-        description: Monthly chip price history by product.
+        description: >
+          Chip price history. One row per product per month.
+        columns:
+          - name: year_month
+            description: Month of the price observation, in YYYY-MM format.
+          - name: year
+            description: Year of the price observation.
+          - name: product
+            description: Product name, e.g. DRAM_DDR4_8Gb.
+          - name: currency
+            description: Currency the price is denominated in.
+          - name: unit
+            description: Unit of measure, e.g. USD/chip.
+          - name: price
+            description: Price in the stated currency per unit.
+
       - name: export_controls
-        description: Export-control policies and their targets.
+        description: >
+          Export-control policies and their targets. One row per control action.
+        columns:
+          - name: control_id
+            description: Unique identifier for the control action.
+          - name: date
+            description: Date the policy was enacted.
+          - name: year
+            description: Year the policy was enacted.
+          - name: month
+            description: Month the policy was enacted.
+          - name: imposing_country
+            description: Country imposing the control.
+          - name: target
+            description: Country or entity targeted by the control.
+          - name: policy_name
+            description: Name of the export-control policy.
+          - name: severity_score
+            description: Severity of the control, higher is stricter.
+          - name: description
+            description: Free-text description of the policy.
+          - name: is_us_action
+            description: "Flag: imposed by the US."
+          - name: is_china_action
+            description: "Flag: targets China."
+          - name: is_netherlands_action
+            description: "Flag: imposed by the Netherlands."
+          - name: is_trump_1_0
+            description: "Flag: enacted during the Trump 1.0 presidency."
+          - name: is_biden
+            description: "Flag: enacted during the Biden presidency."
+          - name: is_trump_2_0
+            description: "Flag: enacted during the Trump 2.0 presidency."
+
       - name: fab_capacity
-        description: Fab capacity by company, process node, and year.
+        description: >
+          Fab capacity. One row per company, process node, and year.
+        columns:
+          - name: year
+            description: Year of the capacity figure.
+          - name: company
+            description: Company operating the fab.
+          - name: country_iso3
+            description: Country of the fab, as an ISO 3166-1 alpha-3 code.
+          - name: process_node_nm
+            description: Process node in nanometers.
+          - name: fab_type
+            description: Type of fab, e.g. logic or memory.
+          - name: monthly_wafer_capacity
+            description: Wafers the fab can produce per month.
+          - name: fab_started_year
+            description: Year the fab started operations.
+
       - name: chip_companies_financials
-        description: Annual financials for semiconductor companies.
+        description: >
+          Annual financials for semiconductor companies. One row per company,
+          segment, and year.
+        columns:
+          - name: year
+            description: Fiscal year.
+          - name: company_name
+            description: Name of the semiconductor company.
+          - name: ticker
+            description: Stock ticker symbol.
+          - name: country_iso3
+            description: Country of incorporation, as an ISO 3166-1 alpha-3 code.
+          - name: segment
+            description: Business segment, e.g. foundry, fabless, or IDM.
+          - name: revenue_usd_bn
+            description: Revenue in billions of US dollars.
+          - name: operating_margin_pct
+            description: Operating margin as a percentage.
+          - name: operating_income_usd_bn
+            description: Operating income in billions of US dollars.
+          - name: rd_spend_usd_bn
+            description: R&D spend in billions of US dollars.
+          - name: capex_usd_bn
+            description: Capital expenditure in billions of US dollars.

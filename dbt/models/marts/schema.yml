@@ -1,17 +1,154 @@
 models:
   - name: fct_export_controls
     description: >
-      Export-control policies enriched with boolean flags and an
-      administration label derived from the presidency-period flags.
+      Export-control policies enriched with boolean flags and an administration
+      label derived from the presidency-period flags. One row per control action.
     columns:
       - name: control_id
+        description: Unique identifier for the control action.
         data_tests:
           - not_null
           - unique
       - name: date
+        description: Date the policy was enacted.
         data_tests:
           - not_null
       - name: administration
+        description: US administration in office when the action was taken.
         data_tests:
           - accepted_values:
-              values: ['Trump 1.0', 'Biden', 'Trump 2.0', 'Other']
+              arguments:
+                values: ['Trump 1.0', 'Biden', 'Trump 2.0', 'Other']
+
+  - name: fct_ai_chip_market
+    description: >
+      AI chip launches with revenue expressed in both millions and full US
+      dollars. One row per chip per year.
+    columns:
+      - name: chip_year_key
+        description: Surrogate key identifying a chip launch by vendor, chip name, and year.
+        data_tests:
+          - not_null
+          - unique
+      - name: chip_name
+        description: Name of the AI chip.
+        data_tests:
+          - not_null
+      - name: vendor
+        description: Company that designs and sells the chip.
+        data_tests:
+          - not_null
+      - name: launch_date
+        description: Date the chip was launched.
+        data_tests:
+          - not_null
+      - name: estimated_revenue_usd_m
+        description: Estimated revenue in millions of US dollars.
+      - name: estimated_revenue_usd
+        description: Estimated revenue in US dollars.
+
+  - name: fct_chip_prices
+    description: >
+      Chip price history with a USD-denominated price column. One row per
+      product per month.
+    columns:
+      - name: product_month_key
+        description: Surrogate key identifying a price observation by product and month.
+        data_tests:
+          - not_null
+          - unique
+      - name: year
+        description: Year of the price observation.
+        data_tests:
+          - not_null
+      - name: product
+        description: Product name, e.g. DRAM_DDR4_8Gb.
+        data_tests:
+          - not_null
+      - name: currency
+        description: Currency the price is denominated in.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['USD']
+      - name: price_usd
+        description: Price in US dollars, populated only when the currency is USD.
+
+  - name: fct_fab_capacity
+    description: >
+      Fab capacity with an annualized wafer capacity derived from the monthly
+      figure. One row per company, process node, and year.
+    columns:
+      - name: company_node_year_key
+        description: Surrogate key identifying a capacity row by company, process node, and year.
+        data_tests:
+          - not_null
+          - unique
+      - name: year
+        description: Year of the capacity figure.
+        data_tests:
+          - not_null
+      - name: company
+        description: Company operating the fab.
+        data_tests:
+          - not_null
+      - name: process_node_nm
+        description: Process node in nanometers.
+        data_tests:
+          - not_null
+      - name: annual_wafer_capacity
+        description: Annual wafer capacity.
+
+  - name: fct_company_financials
+    description: >
+      Company financials with an R&D intensity ratio derived from R&D spend and
+      revenue. One row per company, segment, and year.
+    columns:
+      - name: company_segment_year_key
+        description: Surrogate key identifying a financials row by company, segment, and year.
+        data_tests:
+          - not_null
+          - unique
+      - name: year
+        description: Fiscal year.
+        data_tests:
+          - not_null
+      - name: company_name
+        description: Company name.
+        data_tests:
+          - not_null
+      - name: revenue_usd_bn
+        description: Revenue in billions of US dollars.
+        data_tests:
+          - not_null
+      - name: rd_intensity_pct
+        description: R&D spend as a percentage of revenue.
+
+  - name: fct_vendor_intelligence
+    description: >
+      Cross-source vendor view joining AI chip revenue, company financials, and
+      fab capacity on a normalized vendor name and year. One row per vendor per
+      year.
+    columns:
+      - name: vendor_year_key
+        description: Surrogate key combining the vendor name and year.
+        data_tests:
+          - not_null
+          - unique
+      - name: vendor
+        description: Vendor name, preserved with its original casing.
+        data_tests:
+          - not_null
+      - name: year
+        description: Year of the aggregated figures.
+        data_tests:
+          - not_null
+      - name: ai_chip_revenue_usd_m
+        description: Sum of AI chip revenue for the vendor and year, in millions of US dollars.
+      - name: company_revenue_usd_bn
+        description: Company revenue in billions of US dollars, or null if no financials match.
+      - name: rd_intensity_pct
+        description: R&D intensity as a percentage, or null if no financials match.
+      - name: annual_wafer_capacity
+        description: Annual wafer capacity, or null if the vendor operates no fabs.
