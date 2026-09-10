@@ -1,4 +1,5 @@
 select
+    {{ dbt_utils.generate_surrogate_key(['company_name', 'segment', 'year']) }} as company_segment_year_key,
     year,
     company_name,
     ticker,

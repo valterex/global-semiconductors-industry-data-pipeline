@@ -1,4 +1,5 @@
 select
+    {{ dbt_utils.generate_surrogate_key(['company', 'process_node_nm', 'year']) }} as company_node_year_key,
     year,
     company,
     country_iso3,

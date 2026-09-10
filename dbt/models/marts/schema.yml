@@ -25,6 +25,11 @@ models:
       AI chip launches with revenue expressed in both millions and full US
       dollars. One row per chip per year.
     columns:
+      - name: chip_year_key
+        description: Surrogate key identifying a chip launch by vendor, chip name, and year.
+        data_tests:
+          - not_null
+          - unique
       - name: chip_name
         description: Name of the AI chip.
         data_tests:
@@ -47,6 +52,11 @@ models:
       Chip price history with a USD-denominated price column. One row per
       product per month.
     columns:
+      - name: product_month_key
+        description: Surrogate key identifying a price observation by product and month.
+        data_tests:
+          - not_null
+          - unique
       - name: year
         description: Year of the price observation.
         data_tests:
@@ -70,6 +80,11 @@ models:
       Fab capacity with an annualized wafer capacity derived from the monthly
       figure. One row per company, process node, and year.
     columns:
+      - name: company_node_year_key
+        description: Surrogate key identifying a capacity row by company, process node, and year.
+        data_tests:
+          - not_null
+          - unique
       - name: year
         description: Year of the capacity figure.
         data_tests:
@@ -90,6 +105,11 @@ models:
       Company financials with an R&D intensity ratio derived from R&D spend and
       revenue. One row per company, segment, and year.
     columns:
+      - name: company_segment_year_key
+        description: Surrogate key identifying a financials row by company, segment, and year.
+        data_tests:
+          - not_null
+          - unique
       - name: year
         description: Fiscal year.
         data_tests:

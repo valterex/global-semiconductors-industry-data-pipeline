@@ -1,4 +1,5 @@
 select
+    {{ dbt_utils.generate_surrogate_key(['product', 'year_month']) }} as product_month_key,
     year_month,
     year,
     product,

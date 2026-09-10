@@ -93,7 +93,9 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
    # must match the gcp_project_id set in the Kestra KV store
    export GCP_PROJECT_ID=<your-project>
 
-   # no `dbt deps` step — the project uses no packages
+   # install the dbt_utils package (used for surrogate keys)
+   uv run --group dbt dbt deps --profiles-dir .
+
    uv run --group dbt dbt build --profiles-dir .
    uv run --group dbt dbt docs generate --profiles-dir .
    uv run --group dbt dbt docs serve --profiles-dir .

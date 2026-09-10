@@ -1,4 +1,5 @@
 select
+    {{ dbt_utils.generate_surrogate_key(['vendor', 'chip_name', 'year']) }} as chip_year_key,
     chip_name,
     vendor,
     launch_date,

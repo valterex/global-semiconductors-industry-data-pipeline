@@ -30,7 +30,7 @@ fab_capacity as (
 )
 
 select
-    vr.vendor_name || '_' || cast(vr.year as string) as vendor_year_key,
+    {{ dbt_utils.generate_surrogate_key(['vr.vendor_name', 'vr.year']) }} as vendor_year_key,
     vr.vendor_display as vendor,
     vr.year,
     vr.ai_chip_revenue_usd_m,
