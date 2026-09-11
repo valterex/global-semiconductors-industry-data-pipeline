@@ -11,6 +11,7 @@ description: |
 
 variables:
   gcs_bucket: "gs://{{ kv('GCP_BUCKET_NAME') }}"
+  max_bytes_billed: 1073741824
 
 tasks:
   - id: extract
@@ -72,6 +73,7 @@ tasks:
 
   - id: create_external_ai_chip_market
     type: io.kestra.plugin.gcp.bigquery.Query
+    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
     description: Create a BigQuery external table over ai_chip_market.csv.
     sql: |
       CREATE OR REPLACE EXTERNAL TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.ai_chip_market_external`
@@ -85,16 +87,30 @@ tasks:
 
   - id: materialize_ai_chip_market
     type: io.kestra.plugin.gcp.bigquery.Query
+    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
     description: Materialize ai_chip_market as a partitioned and clustered table.
     sql: |
       CREATE OR REPLACE TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.ai_chip_market`
       PARTITION BY DATE_TRUNC(launch_date, MONTH)
       CLUSTER BY vendor, chip_name
-      AS SELECT * FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.ai_chip_market_external`
+      AS SELECT
+        year,
+        chip_name,
+        vendor,
+        launch_date,
+        memory_gb,
+        fp16_tflops,
+        tdp_watts,
+        estimated_shipments_units,
+        estimated_asp_usd,
+        estimated_revenue_usd_m,
+        description
+      FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.ai_chip_market_external`
       WHERE launch_date IS NOT NULL;
 
   - id: create_external_chip_prices
     type: io.kestra.plugin.gcp.bigquery.Query
+    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
     description: Create a BigQuery external table over chip_prices.csv.
     sql: |
       CREATE OR REPLACE EXTERNAL TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_prices_external`
@@ -108,16 +124,25 @@ tasks:
 
   - id: materialize_chip_prices
     type: io.kestra.plugin.gcp.bigquery.Query
+    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
     description: Materialize chip_prices as a partitioned and clustered table.
     sql: |
       CREATE OR REPLACE TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_prices`
       PARTITION BY RANGE_BUCKET(year, GENERATE_ARRAY(2010, 2031, 1))
       CLUSTER BY product
-      AS SELECT * FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_prices_external`
+      AS SELECT
+        year_month,
+        year,
+        product,
+        currency,
+        unit,
+        price
+      FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_prices_external`
       WHERE year IS NOT NULL;
 
   - id: create_external_export_controls
     type: io.kestra.plugin.gcp.bigquery.Query
+    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
     description: Create a BigQuery external table over export_controls.csv.
     sql: |
       CREATE OR REPLACE EXTERNAL TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.export_controls_external`
@@ -131,16 +156,34 @@ tasks:
 
   - id: materialize_export_controls
     type: io.kestra.plugin.gcp.bigquery.Query
+    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
     description: Materialize export_controls as a partitioned and clustered table.
     sql: |
       CREATE OR REPLACE TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.export_controls`
       PARTITION BY DATE_TRUNC(date, MONTH)
       CLUSTER BY imposing_country, target
-      AS SELECT * FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.export_controls_external`
+      AS SELECT
+        control_id,
+        date,
+        year,
+        month,
+        imposing_country,
+        target,
+        policy_name,
+        severity_score,
+        description,
+        is_us_action,
+        is_china_action,
+        is_netherlands_action,
+        is_trump_1_0,
+        is_biden,
+        is_trump_2_0
+      FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.export_controls_external`
       WHERE date IS NOT NULL;
 
   - id: create_external_fab_capacity
     type: io.kestra.plugin.gcp.bigquery.Query
+    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
     description: Create a BigQuery external table over fab_capacity.csv.
     sql: |
       CREATE OR REPLACE EXTERNAL TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.fab_capacity_external`
@@ -154,16 +197,26 @@ tasks:
 
   - id: materialize_fab_capacity
     type: io.kestra.plugin.gcp.bigquery.Query
+    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
     description: Materialize fab_capacity as a partitioned and clustered table.
     sql: |
       CREATE OR REPLACE TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.fab_capacity`
       PARTITION BY RANGE_BUCKET(year, GENERATE_ARRAY(2010, 2031, 1))
       CLUSTER BY company, process_node_nm
-      AS SELECT * FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.fab_capacity_external`
+      AS SELECT
+        year,
+        company,
+        country_iso3,
+        process_node_nm,
+        fab_type,
+        monthly_wafer_capacity,
+        fab_started_year
+      FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.fab_capacity_external`
       WHERE year IS NOT NULL;
 
   - id: create_external_chip_companies_financials
     type: io.kestra.plugin.gcp.bigquery.Query
+    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
     description: Create a BigQuery external table over chip_companies_financials.csv.
     sql: |
       CREATE OR REPLACE EXTERNAL TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_companies_financials_external`
@@ -177,12 +230,24 @@ tasks:
 
   - id: materialize_chip_companies_financials
     type: io.kestra.plugin.gcp.bigquery.Query
+    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
     description: Materialize chip_companies_financials as a partitioned and clustered table.
     sql: |
       CREATE OR REPLACE TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_companies_financials`
       PARTITION BY RANGE_BUCKET(year, GENERATE_ARRAY(2010, 2031, 1))
       CLUSTER BY company_name, segment
-      AS SELECT * FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_companies_financials_external`
+      AS SELECT
+        year,
+        company_name,
+        ticker,
+        country_iso3,
+        segment,
+        revenue_usd_bn,
+        operating_margin_pct,
+        operating_income_usd_bn,
+        rd_spend_usd_bn,
+        capex_usd_bn
+      FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_companies_financials_external`
       WHERE year IS NOT NULL;
 
   - id: purge_files
