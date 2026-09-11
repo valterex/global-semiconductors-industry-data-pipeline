@@ -26,6 +26,10 @@ resource "google_storage_bucket" "semiconductor_data_lake" {
   storage_class               = var.gcs_storage_class
   force_destroy               = false
   uniform_bucket_level_access = true
+  labels = {
+    environment = "dev"
+    pipeline    = "semiconductor"
+  }
 
   lifecycle_rule {
     condition {
@@ -41,4 +45,8 @@ resource "google_bigquery_dataset" "semiconductor_dataset" {
   dataset_id                 = var.bq_dataset_name
   location                   = var.location
   delete_contents_on_destroy = false
+  labels = {
+    environment = "dev"
+    pipeline    = "semiconductor"
+  }
 }
