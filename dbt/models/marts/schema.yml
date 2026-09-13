@@ -78,10 +78,13 @@ models:
   - name: fct_fab_capacity
     description: >
       Fab capacity with an annualized wafer capacity derived from the monthly
-      figure. One row per company, process node, and year.
+      figure. One row per company, process node, fab location, fab type, and
+      year.
     columns:
-      - name: company_node_year_key
-        description: Surrogate key identifying a capacity row by company, process node, and year.
+      - name: company_node_fab_year_key
+        description: >
+          Surrogate key identifying a capacity row by company, process node, fab
+          location, fab type, and year.
         data_tests:
           - not_null
           - unique
