@@ -5,7 +5,7 @@ semiconductor:
       type: bigquery
       method: oauth
       project: "{{ env_var('GCP_PROJECT_ID') }}"
-      dataset: global_semiconductor_industry
+      dataset: "{{ env_var('GCP_DATASET') }}"
       location: EU
       threads: 1
       job_execution_timeout_seconds: 300

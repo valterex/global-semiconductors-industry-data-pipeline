@@ -32,6 +32,7 @@ variable "gcs_storage_class" {
   default     = "STANDARD"
 }
 
+# Must match the GCP_DATASET environment variable used by dbt and the dashboard.
 variable "bq_dataset_name" {
   description = "BigQuery dataset name"
   type        = string

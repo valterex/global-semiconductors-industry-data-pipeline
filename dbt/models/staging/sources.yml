@@ -4,7 +4,7 @@ sources:
       Native BigQuery tables materialized by the Kestra ingest pipeline,
       partitioned and clustered on time.
     database: "{{ env_var('GCP_PROJECT_ID') }}"
-    schema: global_semiconductor_industry
+    schema: "{{ env_var('GCP_DATASET') }}"
     tables:
       - name: ai_chip_market
         description: >

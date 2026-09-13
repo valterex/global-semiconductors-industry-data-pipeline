@@ -22,7 +22,7 @@ inputs:
 
   - id: gcp_dataset
     type: STRING
-    defaults: "global_semiconductor_industry"
+    defaults: "{{ envs.gcp_dataset }}"
     description: BigQuery dataset name.
 
 tasks:

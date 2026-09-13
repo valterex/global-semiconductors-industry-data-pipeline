@@ -49,7 +49,12 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
 
    KESTRA_BASIC_AUTH_USERNAME=<username> # Must be an email address
    KESTRA_BASIC_AUTH_PASSWORD=<password>
+
+   # BigQuery dataset name; must match `bq_dataset_name` in terraform/variables.tf
+   GCP_DATASET=global_semiconductor_industry
    ```
+
+   A full template lives in `.env.example`.
 
    Docker:
 
@@ -93,24 +98,28 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
    # must match the gcp_project_id set in the Kestra KV store
    export GCP_PROJECT_ID=<your-project>
 
+   # must match `bq_dataset_name` in terraform/variables.tf
+   export GCP_DATASET=global_semiconductor_industry
+
    # install the dbt_utils package (used for surrogate keys)
    uv run --group dbt dbt deps --profiles-dir .
    cd ..
    ```
 
-   The dataset is hardcoded to `global_semiconductor_industry` in
-   `profiles.yml.example` and `models/staging/sources.yml` — keep it aligned with
-   `bq_dataset_name` in `terraform/variables.tf` if you change that default.
+   The BigQuery dataset name is read from the `GCP_DATASET` environment variable
+   in `profiles.yml.example` and `models/staging/sources.yml`. Keep it aligned with
+   `bq_dataset_name` in `terraform/variables.tf` and the Kestra KV store value.
 
 7. Run the dashboard
 
    ```sh
    # uses your existing Application Default Credentials (see step 2)
    uv sync --group dashboard
-   GCP_PROJECT_ID=<your-project> uv run --group dashboard streamlit run dashboard/app.py
+   GCP_PROJECT_ID=<your-project> GCP_DATASET=global_semiconductor_industry uv run --group dashboard streamlit run dashboard/app.py
    ```
 
-   `GCP_PROJECT_ID` must match the project used by the pipeline.
+   `GCP_PROJECT_ID` and `GCP_DATASET` must match the project and dataset used by
+   the pipeline.
 
 ## Cleanup
 
