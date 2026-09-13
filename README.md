@@ -95,9 +95,7 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
 
    # install the dbt_utils package (used for surrogate keys)
    uv run --group dbt dbt deps --profiles-dir .
-
-    uv run --group dbt dbt build --profiles-dir .
-    cd ..
+   cd ..
    ```
 
    The dataset is hardcoded to `global_semiconductor_industry` in
