@@ -106,6 +106,16 @@ An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](h
    `profiles.yml.example` and `models/staging/sources.yml` — keep it aligned with
    `bq_dataset_name` in `terraform/variables.tf` if you change that default.
 
+7. Run the dashboard
+
+   ```sh
+   # uses your existing Application Default Credentials (see step 2)
+   uv sync --group dashboard
+   GCP_PROJECT_ID=<your-project> uv run --group dashboard streamlit run dashboard/app.py
+   ```
+
+   `GCP_PROJECT_ID` must match the project used by the pipeline.
+
 ## Cleanup
 
 Deletion is intentionally protected: `terraform destroy` will fail if the GCS
