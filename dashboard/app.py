@@ -4,9 +4,16 @@ import pandas as pd
 import streamlit as st
 from google.cloud import bigquery
 
-DATASET = "global_semiconductor_industry"
-
 st.set_page_config(page_title="Semiconductor Dashboard", layout="wide")
+
+if "GCP_PROJECT_ID" not in os.environ or "GCP_DATASET" not in os.environ:
+    st.error(
+        "Set the `GCP_PROJECT_ID` and `GCP_DATASET` environment variables, "
+        "then restart the app."
+    )
+    st.stop()
+
+DATASET = os.environ["GCP_DATASET"]
 
 
 @st.cache_resource
@@ -36,10 +43,6 @@ def load_export_controls() -> pd.DataFrame:
 
 st.title("Global Semiconductor Industry")
 st.caption("AI chip revenue and export controls, sourced from the BigQuery marts.")
-
-if "GCP_PROJECT_ID" not in os.environ:
-    st.error("Set the `GCP_PROJECT_ID` environment variable, then restart the app.")
-    st.stop()
 
 revenue = load_ai_chip_revenue()
 controls = load_export_controls()
