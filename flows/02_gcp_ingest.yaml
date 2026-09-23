@@ -2,7 +2,7 @@ id: 02_gcp_ingest
 namespace: semiconductor
 description: |
   ELT pipeline for the Kaggle semiconductor dataset:
-    1. Extract the 5 CSV files via kagglehub (Python).
+    1. Extract the 2 CSV files via kagglehub (Python).
     2. Stage data to Google Cloud Storage.
     3. Create a BigQuery external table over each GCS file.
     4. Materialize partitioned + clustered native tables via CTAS.
@@ -16,7 +16,7 @@ variables:
 tasks:
   - id: extract
     type: io.kestra.plugin.scripts.python.Script
-    description: Download the five Kaggle CSVs.
+    description: Download the two Kaggle CSVs.
     taskRunner:
       type: io.kestra.plugin.scripts.runner.docker.Docker
       pullPolicy: IF_NOT_PRESENT
@@ -30,10 +30,7 @@ tasks:
 
       FILES = [
           "ai_chip_market.csv",
-          "chip_prices.csv",
           "export_controls.csv",
-          "fab_capacity.csv",
-          "chip_companies_financials.csv",
       ]
 
       path = kagglehub.dataset_download("sergionefedov/global-semiconductor-industry-2010-2026")
@@ -47,29 +44,11 @@ tasks:
     from: "{{ outputs.extract.outputFiles['ai_chip_market.csv'] }}"
     to: "{{ render(vars.gcs_bucket) }}/ai_chip_market.csv"
 
-  - id: stage_chip_prices
-    type: io.kestra.plugin.gcp.gcs.Upload
-    description: Upload chip_prices.csv to GCS.
-    from: "{{ outputs.extract.outputFiles['chip_prices.csv'] }}"
-    to: "{{ render(vars.gcs_bucket) }}/chip_prices.csv"
-
   - id: stage_export_controls
     type: io.kestra.plugin.gcp.gcs.Upload
     description: Upload export_controls.csv to GCS.
     from: "{{ outputs.extract.outputFiles['export_controls.csv'] }}"
     to: "{{ render(vars.gcs_bucket) }}/export_controls.csv"
-
-  - id: stage_fab_capacity
-    type: io.kestra.plugin.gcp.gcs.Upload
-    description: Upload fab_capacity.csv to GCS.
-    from: "{{ outputs.extract.outputFiles['fab_capacity.csv'] }}"
-    to: "{{ render(vars.gcs_bucket) }}/fab_capacity.csv"
-
-  - id: stage_chip_companies_financials
-    type: io.kestra.plugin.gcp.gcs.Upload
-    description: Upload chip_companies_financials.csv to GCS.
-    from: "{{ outputs.extract.outputFiles['chip_companies_financials.csv'] }}"
-    to: "{{ render(vars.gcs_bucket) }}/chip_companies_financials.csv"
 
   - id: create_external_ai_chip_market
     type: io.kestra.plugin.gcp.bigquery.Query
@@ -107,38 +86,6 @@ tasks:
         description
       FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.ai_chip_market_external`
       WHERE launch_date IS NOT NULL;
-
-  - id: create_external_chip_prices
-    type: io.kestra.plugin.gcp.bigquery.Query
-    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
-    description: Create a BigQuery external table over chip_prices.csv.
-    sql: |
-      CREATE OR REPLACE EXTERNAL TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_prices_external`
-      (year_month STRING, year INT64, product STRING, currency STRING, unit STRING, price FLOAT64)
-      OPTIONS (
-        format = 'CSV',
-        uris = ['{{ render(vars.gcs_bucket) }}/chip_prices.csv'],
-        skip_leading_rows = 1,
-        ignore_unknown_values = TRUE
-      );
-
-  - id: materialize_chip_prices
-    type: io.kestra.plugin.gcp.bigquery.Query
-    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
-    description: Materialize chip_prices as a partitioned and clustered table.
-    sql: |
-      CREATE OR REPLACE TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_prices`
-      PARTITION BY RANGE_BUCKET(year, GENERATE_ARRAY(2010, 2031, 1))
-      CLUSTER BY product
-      AS SELECT
-        year_month,
-        year,
-        product,
-        currency,
-        unit,
-        price
-      FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_prices_external`
-      WHERE year IS NOT NULL;
 
   - id: create_external_export_controls
     type: io.kestra.plugin.gcp.bigquery.Query
@@ -180,75 +127,6 @@ tasks:
         is_trump_2_0
       FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.export_controls_external`
       WHERE date IS NOT NULL;
-
-  - id: create_external_fab_capacity
-    type: io.kestra.plugin.gcp.bigquery.Query
-    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
-    description: Create a BigQuery external table over fab_capacity.csv.
-    sql: |
-      CREATE OR REPLACE EXTERNAL TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.fab_capacity_external`
-      (year INT64, company STRING, country_iso3 STRING, process_node_nm INT64, fab_type STRING, monthly_wafer_capacity INT64, fab_started_year INT64)
-      OPTIONS (
-        format = 'CSV',
-        uris = ['{{ render(vars.gcs_bucket) }}/fab_capacity.csv'],
-        skip_leading_rows = 1,
-        ignore_unknown_values = TRUE
-      );
-
-  - id: materialize_fab_capacity
-    type: io.kestra.plugin.gcp.bigquery.Query
-    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
-    description: Materialize fab_capacity as a partitioned and clustered table.
-    sql: |
-      CREATE OR REPLACE TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.fab_capacity`
-      PARTITION BY RANGE_BUCKET(year, GENERATE_ARRAY(2010, 2031, 1))
-      CLUSTER BY company, process_node_nm
-      AS SELECT
-        year,
-        company,
-        country_iso3,
-        process_node_nm,
-        fab_type,
-        monthly_wafer_capacity,
-        fab_started_year
-      FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.fab_capacity_external`
-      WHERE year IS NOT NULL;
-
-  - id: create_external_chip_companies_financials
-    type: io.kestra.plugin.gcp.bigquery.Query
-    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
-    description: Create a BigQuery external table over chip_companies_financials.csv.
-    sql: |
-      CREATE OR REPLACE EXTERNAL TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_companies_financials_external`
-      (year INT64, company_name STRING, ticker STRING, country_iso3 STRING, segment STRING, revenue_usd_bn FLOAT64, operating_margin_pct FLOAT64, operating_income_usd_bn FLOAT64, rd_spend_usd_bn FLOAT64, capex_usd_bn FLOAT64)
-      OPTIONS (
-        format = 'CSV',
-        uris = ['{{ render(vars.gcs_bucket) }}/chip_companies_financials.csv'],
-        skip_leading_rows = 1,
-        ignore_unknown_values = TRUE
-      );
-
-  - id: materialize_chip_companies_financials
-    type: io.kestra.plugin.gcp.bigquery.Query
-    maximumBytesBilled: "{{ vars.max_bytes_billed }}"
-    description: Materialize chip_companies_financials as a partitioned and clustered table.
-    sql: |
-      CREATE OR REPLACE TABLE `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_companies_financials`
-      PARTITION BY RANGE_BUCKET(year, GENERATE_ARRAY(2010, 2031, 1))
-      CLUSTER BY company_name, segment
-      AS SELECT
-        year,
-        company_name,
-        ticker,
-        country_iso3,
-        segment,
-        revenue_usd_bn,
-        operating_margin_pct,
-        operating_income_usd_bn,
-        rd_spend_usd_bn,
-        capex_usd_bn
-      FROM `{{ kv('GCP_PROJECT_ID') }}.{{ kv('GCP_DATASET') }}.chip_companies_financials_external`
-      WHERE year IS NOT NULL;
 
   - id: purge_files
     type: io.kestra.plugin.core.storage.PurgeCurrentExecutionFiles
