@@ -1,18 +1,15 @@
 select
     control_id,
-    date,
+    date as enacted_date,
     year,
     month,
     imposing_country,
-    target,
+    target as target_country,
     policy_name,
     severity_score,
     description,
-    is_us_action,
-    is_china_action,
-    is_netherlands_action,
-    is_trump_1_0,
-    is_biden,
-    is_trump_2_0
+    cast(is_trump_1_0 as boolean) as is_trump_first_term,
+    cast(is_biden as boolean) as is_biden_term,
+    cast(is_trump_2_0 as boolean) as is_trump_second_term
 from {{ source('raw', 'export_controls') }}
 where date is not null

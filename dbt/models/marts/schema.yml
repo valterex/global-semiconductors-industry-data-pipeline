@@ -1,15 +1,15 @@
 models:
   - name: fct_export_controls
     description: >
-      Export-control policies enriched with boolean flags and an administration
-      label derived from the presidency-period flags. One row per control action.
+      Export-control actions with a derived administration label. One row per
+      control action.
     columns:
       - name: control_id
         description: Unique identifier for the control action.
         data_tests:
           - not_null
           - unique
-      - name: date
+      - name: enacted_date
         description: Date the policy was enacted.
         data_tests:
           - not_null
@@ -20,13 +20,12 @@ models:
               arguments:
                 values: ['Trump 1.0', 'Biden', 'Trump 2.0', 'Other']
 
-  - name: fct_ai_chip_market
+  - name: dim_ai_chips
     description: >
-      AI chip launches with estimated revenue in millions of US dollars. One
-      row per chip per year.
+      AI chip catalog. One row per chip, with launch date, specs, and vendor.
     columns:
-      - name: chip_year_key
-        description: Surrogate key identifying a chip launch by vendor, chip name, and year.
+      - name: chip_key
+        description: Surrogate key identifying a chip by vendor and chip name.
         data_tests:
           - not_null
           - unique
@@ -40,6 +39,24 @@ models:
           - not_null
       - name: launch_date
         description: Date the chip was launched.
+        data_tests:
+          - not_null
+
+  - name: fct_ai_chip_sales
+    description: >
+      AI chip sales estimates. One row per chip per year.
+    columns:
+      - name: chip_year_key
+        description: Surrogate key identifying a chip-year by vendor, chip name, and year.
+        data_tests:
+          - not_null
+          - unique
+      - name: chip_key
+        description: Foreign key to dim_ai_chips.
+        data_tests:
+          - not_null
+      - name: year
+        description: Year the chip was on the market.
         data_tests:
           - not_null
       - name: estimated_revenue_usd_m
@@ -58,7 +75,7 @@ models:
         description: Year the revenue was earned.
         data_tests:
           - not_null
-      - name: revenue_usd_m
+      - name: estimated_revenue_usd_m
         description: Total estimated revenue in millions of US dollars.
         data_tests:
           - not_null
