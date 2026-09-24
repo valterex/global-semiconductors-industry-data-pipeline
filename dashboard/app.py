@@ -25,7 +25,7 @@ def get_client() -> bigquery.Client:
 def load_ai_chip_revenue() -> pd.DataFrame:
     project = os.environ["GCP_PROJECT_ID"]
     sql = f"""
-        select vendor, year, revenue_usd_m
+        select vendor, year, estimated_revenue_usd_m
         from `{project}.{DATASET}.fct_ai_chip_revenue_yearly`
     """
     return get_client().query(sql).to_dataframe()
@@ -62,7 +62,9 @@ if vendors:
     revenue = revenue[revenue["vendor"].isin(vendors)]
 
 st.subheader("AI chip estimated revenue by vendor (USD m)")
-revenue_pivot = revenue.pivot(index="year", columns="vendor", values="revenue_usd_m")
+revenue_pivot = revenue.pivot(
+    index="year", columns="vendor", values="estimated_revenue_usd_m"
+)
 
 st.area_chart(revenue_pivot)
 
