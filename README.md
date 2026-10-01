@@ -1,4 +1,4 @@
-# Global Semiconductor Industry ELT Pipeline
+# Semiconductor ELT Pipeline
 
 An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](https://www.kaggle.com/datasets/sergionefedov/global-semiconductor-industry-2010-2026) dataset from Kaggle into a Google Cloud Storage data lake and BigQuery data warehouse, then transforms it into analytics-ready models with dbt.
 

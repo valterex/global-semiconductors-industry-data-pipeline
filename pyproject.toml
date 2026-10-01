@@ -1,7 +1,7 @@
 [project]
-name = "data-pipeline-semiconductor-industry"
+name = "semiconductor-elt-pipeline"
 version = "0.1.0"
-description = "Data pipeline for semiconductor industry data processing and analysis."
+description = "ELT pipeline for the Global Semiconductor Industry dataset on GCP."
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
