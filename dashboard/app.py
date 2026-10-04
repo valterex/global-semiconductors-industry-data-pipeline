@@ -1,76 +1,71 @@
-import os
-
 import pandas as pd
 import streamlit as st
 from google.cloud import bigquery
 
+from dashboard.config import gcp_config
+from dashboard.queries import get_client, load_ai_chip_revenue, load_export_controls
+from dashboard.transforms import (
+    filter_by_vendors,
+    filter_by_year,
+    pivot_controls,
+    pivot_revenue,
+    year_range,
+)
+
 st.set_page_config(page_title="Semiconductor Dashboard", layout="wide")
 
-if "GCP_PROJECT_ID" not in os.environ or "GCP_DATASET" not in os.environ:
+PROJECT, DATASET = gcp_config()
+
+if not PROJECT or not DATASET:
     st.error(
         "Set the `GCP_PROJECT_ID` and `GCP_DATASET` environment variables, "
         "then restart the app."
     )
     st.stop()
 
-DATASET = os.environ["GCP_DATASET"]
+# `st.stop()` raises at runtime, but type checkers can't infer that, so narrow
+# the optional values here.
+assert PROJECT is not None and DATASET is not None
 
 
 @st.cache_resource
-def get_client() -> bigquery.Client:
-    return bigquery.Client(project=os.environ["GCP_PROJECT_ID"])
+def get_client_cached(project: str) -> bigquery.Client:
+    return get_client(project)
 
 
 @st.cache_data(ttl=3600)
-def load_ai_chip_revenue() -> pd.DataFrame:
-    project = os.environ["GCP_PROJECT_ID"]
-    sql = f"""
-        select vendor, year, estimated_revenue_usd_m
-        from `{project}.{DATASET}.fct_ai_chip_revenue_yearly`
-    """
-    return get_client().query(sql).to_dataframe()
+def load_ai_chip_revenue_cached(project: str, dataset: str) -> pd.DataFrame:
+    return load_ai_chip_revenue(get_client_cached(project), project, dataset)
 
 
 @st.cache_data(ttl=3600)
-def load_export_controls() -> pd.DataFrame:
-    project = os.environ["GCP_PROJECT_ID"]
-    sql = f"""
-        select year, administration, actions
-        from `{project}.{DATASET}.fct_export_controls_yearly`
-    """
-    return get_client().query(sql).to_dataframe()
+def load_export_controls_cached(project: str, dataset: str) -> pd.DataFrame:
+    return load_export_controls(get_client_cached(project), project, dataset)
 
 
 st.title("Global Semiconductor Industry")
 st.caption("AI chip revenue and export controls, sourced from the BigQuery marts.")
 
-revenue = load_ai_chip_revenue()
-controls = load_export_controls()
+try:
+    revenue = load_ai_chip_revenue_cached(PROJECT, DATASET)
+    controls = load_export_controls_cached(PROJECT, DATASET)
+except Exception as exc:
+    st.error(f"Failed to load data from BigQuery: {exc}")
+    st.stop()
 
-min_year = int(min(revenue["year"].min(), controls["year"].min()))
-max_year = int(max(revenue["year"].max(), controls["year"].max()))
+min_year, max_year = year_range(revenue, controls)
 
 with st.sidebar:
     st.header("Filters")
-    year_range = st.slider("Year", min_year, max_year, (min_year, max_year))
+    year_range_value = st.slider("Year", min_year, max_year, (min_year, max_year))
     vendors = st.multiselect("Vendor", sorted(revenue["vendor"].unique()))
 
-revenue = revenue[revenue["year"].between(*year_range)]
-controls = controls[controls["year"].between(*year_range)]
-
-if vendors:
-    revenue = revenue[revenue["vendor"].isin(vendors)]
+revenue = filter_by_year(revenue, *year_range_value)
+controls = filter_by_year(controls, *year_range_value)
+revenue = filter_by_vendors(revenue, vendors)
 
 st.subheader("AI chip estimated revenue by vendor (USD m)")
-revenue_pivot = revenue.pivot(
-    index="year", columns="vendor", values="estimated_revenue_usd_m"
-)
-
-st.area_chart(revenue_pivot)
+st.area_chart(pivot_revenue(revenue))
 
 st.subheader("Export-control actions by administration")
-controls_pivot = controls.pivot(
-    index="year", columns="administration", values="actions"
-)
-
-st.bar_chart(controls_pivot)
+st.bar_chart(pivot_controls(controls))
