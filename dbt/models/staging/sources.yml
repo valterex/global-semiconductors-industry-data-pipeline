@@ -68,5 +68,3 @@ sources:
             description: "Flag: enacted during the Biden presidency."
           - name: is_trump_2_0
             description: "Flag: enacted during the Trump 2.0 presidency."
-
-

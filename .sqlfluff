@@ -1,0 +1,15 @@
+[sqlfluff]
+dialect = bigquery
+templater = jinja
+max_line_length = 88
+# Layout rules (LT*) enforce a specific formatting style. This project keeps its
+# own dbt formatting conventions, so those purely-cosmetic rules are disabled
+# while correctness rules (ambiguous joins, structure, references, etc.) remain.
+exclude_rules = LT01,LT02,LT03,LT04,LT05,LT06,LT07,LT08,LT09,LT10,LT11,LT12,LT13,LT14,LT15
+
+[sqlfluff:templater:jinja]
+apply_dbt_builtins = true
+library_path = sqlfluff_lib
+
+[sqlfluff:rules:aliasing.table]
+aliasing = implicit

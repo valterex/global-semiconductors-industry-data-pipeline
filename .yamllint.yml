@@ -1,0 +1,12 @@
+extends: default
+
+ignore: |
+  dbt/dbt_packages/
+  dbt/target/
+
+rules:
+  document-start: disable
+  line-length: disable
+  truthy: disable
+  comments: disable
+  comments-indentation: disable
