@@ -55,6 +55,10 @@ models:
         description: Foreign key to dim_ai_chips.
         data_tests:
           - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_ai_chips')
+                field: chip_key
       - name: year
         description: Year the chip was on the market.
         data_tests:

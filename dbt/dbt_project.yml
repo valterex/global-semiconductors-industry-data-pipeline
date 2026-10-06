@@ -7,6 +7,8 @@ profile: 'semiconductor'
 
 model-paths: ["models"]
 
+test-paths: ["tests"]
+
 clean-targets:
   - "target"
   - "dbt_packages"
