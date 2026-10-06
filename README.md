@@ -1,5 +1,7 @@
 # Semiconductor ELT Pipeline
 
+[![CI](https://github.com/valterex/semiconductor-elt-pipeline/actions/workflows/ci.yml/badge.svg)](https://github.com/valterex/semiconductor-elt-pipeline/actions/workflows/ci.yml)
+
 An ELT pipeline that ingests the [Global Semiconductor Industry (2010–2026)](https://www.kaggle.com/datasets/sergionefedov/global-semiconductor-industry-2010-2026) dataset from Kaggle into a Google Cloud Storage data lake and BigQuery data warehouse, then transforms it into analytics-ready models with dbt.
 
 ## Prerequisites
@@ -139,3 +141,66 @@ cd terraform && terraform destroy
 uv sync
 pre-commit run --all-files
 ```
+
+## Testing
+
+The project is covered by four layers of checks:
+
+- **Unit tests** for the dashboard logic (SQL builders, pandas transforms, and
+  a Streamlit `AppTest` smoke test), run with pytest and gated on a minimum
+  coverage threshold.
+- **dbt data + singular tests** for the transformation layer, run against a
+  live BigQuery dataset.
+- **Static validation** of Terraform, YAML, and SQL (flows, dbt configs, and
+  dbt models).
+
+### Python unit tests
+
+```sh
+uv sync --group dev --group dashboard
+uv run pytest
+```
+
+Coverage must stay at or above 80%.
+
+### dbt tests
+
+dbt tests require a live BigQuery project. Point `dbt test` at the same project
+and dataset used by the pipeline:
+
+```sh
+cd dbt
+GCP_PROJECT_ID=<your-project> GCP_DATASET=global_semiconductor_industry \
+  uv run --group dbt dbt test --profiles-dir .
+cd ..
+```
+
+### Terraform validation
+
+```sh
+cd terraform
+terraform init -backend=false -input=false
+terraform validate
+cd ..
+```
+
+### YAML linting
+
+```sh
+uv run yamllint -c .yamllint.yml flows dbt compose.yaml
+```
+
+### SQL linting
+
+dbt models are linted with sqlfluff using the BigQuery dialect and the jinja
+templater (so it runs offline, without a warehouse). `dbt_utils` macros are
+stubbed in `sqlfluff_lib/` so the templater can render them.
+
+```sh
+uv sync --group sqlfluff
+uv run sqlfluff lint dbt/models dbt/tests
+```
+
+CI runs the Python unit tests, YAML and SQL lint, Terraform validation, and
+tflint on every push and pull request. The `test` job publishes a coverage
+report as a comment on pull requests (via `python-coverage-comment-action`).
