@@ -12,27 +12,41 @@ from dashboard.queries import (
 
 def test_build_ai_chip_revenue_query() -> None:
     sql = build_ai_chip_revenue_query("my-project", "my_dataset")
-    assert "`my-project.my_dataset.fct_ai_chip_revenue_yearly`" in sql
+    assert sql == (
+        "select vendor, year, estimated_revenue_usd_m "
+        "from `my-project.my_dataset.fct_ai_chip_revenue_yearly`"
+    )
 
 
 def test_build_export_controls_query() -> None:
     sql = build_export_controls_query("my-project", "my_dataset")
-    assert "`my-project.my_dataset.fct_export_controls_yearly`" in sql
+    assert sql == (
+        "select year, administration, actions "
+        "from `my-project.my_dataset.fct_export_controls_yearly`"
+    )
 
 
 def test_load_ai_chip_revenue() -> None:
     client = MagicMock()
-    client.query.return_value.to_dataframe.return_value = pd.DataFrame(
-        {"vendor": ["NVIDIA"]}
+    frame = pd.DataFrame({"vendor": ["NVIDIA", "AMD"], "year": [2023, 2023]})
+    client.query.return_value.to_dataframe.return_value = frame
+
+    result = load_ai_chip_revenue(client, "my-project", "my_dataset")
+
+    pd.testing.assert_frame_equal(result, frame)
+    client.query.assert_called_once_with(
+        build_ai_chip_revenue_query("my-project", "my_dataset")
     )
-    result = load_ai_chip_revenue(client, "p", "d")
-    assert result["vendor"].tolist() == ["NVIDIA"]
-    client.query.assert_called_once()
 
 
 def test_load_export_controls() -> None:
     client = MagicMock()
-    client.query.return_value.to_dataframe.return_value = pd.DataFrame({"year": [2023]})
-    result = load_export_controls(client, "p", "d")
-    assert result["year"].tolist() == [2023]
-    client.query.assert_called_once()
+    frame = pd.DataFrame({"year": [2022, 2023], "actions": [5, 7]})
+    client.query.return_value.to_dataframe.return_value = frame
+
+    result = load_export_controls(client, "my-project", "my_dataset")
+
+    pd.testing.assert_frame_equal(result, frame)
+    client.query.assert_called_once_with(
+        build_export_controls_query("my-project", "my_dataset")
+    )
